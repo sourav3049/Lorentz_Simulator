@@ -2,7 +2,7 @@
 
 ---
 
-## Why this simulator? (Purpose)
+## Why this simulator?
 
 Understanding **special relativity** is easiest when you can *see* how spacetime coordinates transform. This simulator provides:
 
@@ -14,8 +14,8 @@ Use it for self‑study, classroom demos, or quick checks while writing/teaching
 
 ---
 
-## What it does (Features)
-
+## What it does
+$
 - **Lorentz boost calculator** (1D):
   - Inputs: invariant speed `c`, boost speed `v` (as a fraction of `c`), event \((t,x)\), optional particle speed `u` (as a fraction of `c`), and diagram window `T`.
   - Outputs: \(\beta = v/c\), \(\gamma = 1/\sqrt{1-\beta^2}\), transformed event \((x',t')\), proper time \(\Delta\tau\), velocity composition \(u\oplus v\), and velocity seen in the primed frame \(u'\).
@@ -29,7 +29,7 @@ Use it for self‑study, classroom demos, or quick checks while writing/teaching
 - **Privacy & portability**: 100% client‑side; hostable as a single `index.html` on GitHub Pages.
 
 ---
-
+$
 ## How to use
 
 1. \*\*Set \*\*\`\` (defaults to the SI value) or toggle **Use natural units**.
