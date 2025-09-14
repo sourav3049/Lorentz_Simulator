@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lorentz Simulator • Velocity Addition • Time Dilation • Minkowski Diagram</title>
+  <meta name="description" content="Interactive Lorentz transformation simulator: gamma factor, velocity addition, event transforms, and Minkowski diagram. 100% client-side, GitHub Pages ready." />
+  <style>
+    :root{
+      --bg:#0b0e13; --panel:#121824; --muted:#94a3b8; --text:#e6edf3; --accent:#7dd3fc; --accent2:#a78bfa; --good:#34d399; --warn:#fbbf24; --danger:#f87171; --grid:#1f2633;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font:500 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji"; color:var(--text); background:radial-gradient(1200px 1200px at 80% -10%, #162033 0%, #0b0e13 45%) fixed}
+    a{color:var(--accent)}
+    .wrap{max-width:1200px; margin:0 auto; padding:24px}
+    header{display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px}
+    header h1{font-size:22px; margin:0; letter-spacing:0.2px}
+    .grid{display:grid; grid-template-columns: 420px 1fr; gap:16px}
+    @media (max-width: 980px){ .grid{grid-template-columns: 1fr} }
+    .card{background:linear-gradient(180deg, #121824 0%, #0f1520 100%); border:1px solid #1f2633; border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,0.25)}
+    .card h2{font-size:16px; margin:0 0 8px 0; color:#c7d2fe}
+    .sub{font-size:13px; color:var(--muted)}
+    .row{display:grid; grid-template-columns: 1fr 110px; gap:8px; align-items:center; margin:10px 0}
+    .row .label{font-size:13px; color:#cbd5e1}
+    .row input[type="range"]{width:100%}
+    input[type="number"], input[type="text"], select{width:100%; background:#0b1220; border:1px solid #252e42; color:var(--text); padding:8px 10px; border-radius:10px; outline:none}
+    input[type="number"]:focus, input[type="text"]:focus, select:focus{border-color:#3b82f6}
+    .stack{display:flex; flex-direction:column; gap:8px}
+    .row2{display:grid; grid-template-columns: 1fr 1fr; gap:8px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#0b1220; border:1px solid #233047; font-size:13px}
+    .flex{display:flex; gap:8px; align-items:center}
+    .btn{cursor:pointer; background:#0b1220; border:1px solid #243148; color:#e6edf3; padding:10px 12px; border-radius:12px; font-weight:600}
+    .btn:hover{border-color:#3b82f6}
+    .btn.primary{background:linear-gradient(180deg,#1a263b,#0e1726); border-color:#334155}
+    .statgrid{display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-top:8px}
+    .stat{background:#0b1220; border:1px solid #263047; border-radius:12px; padding:10px}
+    .stat .k{font-size:12px; color:var(--muted)}
+    .stat .v{font-size:18px; font-weight:700}
+    canvas{width:100%; height:500px; background:linear-gradient(180deg,#0a0f18,#0b0e13); border:1px solid #1f2633; border-radius:16px}
+    .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-top:8px}
+    .sw{display:inline-flex; align-items:center; gap:6px}
+    .sw i{display:inline-block; width:14px; height:3px; border-radius:2px; background:var(--muted)}
+    .sw .lc{background:linear-gradient(90deg,#88e,#88e)}
+    .sw .wl{background:linear-gradient(90deg,#7dd3fc,#7dd3fc)}
+    .sw .xp{background:linear-gradient(90deg,#34d399,#34d399)}
+    .sw .xp2{background:linear-gradient(90deg,#fbbf24,#fbbf24)}
+    .notice{font-size:12px; color:#9aa7bd}
+    .hr{height:1px; background:#1f2633; margin:12px 0}
+    .grid-3{display:grid; grid-template-columns: repeat(3, 1fr); gap:8px}
+    footer{margin-top:16px; font-size:12px; color:#8aa0be}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>⚡ Lorentz Simulator — boosts, γ, velocity addition & Minkowski diagram</h1>
+      <div class="pill">
+        <label class="flex" style="gap:6px"><input type="checkbox" id="naturalUnits"> Use natural units (set c = 1)</label>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Controls -->
+      <section class="card" aria-label="controls">
+        <h2>Parameters</h2>
+        <div class="sub">Set a boost speed, an event (t, x), and (optionally) a particle speed u. All along one spatial dimension.</div>
+        <div class="hr"></div>
+
+        <div class="row"><div class="label">Invariant speed c (m/s)</div><input type="number" id="cVal" value="299792458" min="0.1" step="1"></div>
+
+        <div class="row"><div class="label">Boost speed v (fraction of c)</div>
+          <div class="flex" style="justify-content:flex-end">
+            <input type="number" id="vFracNum" value="0.6" min="-0.9999" max="0.9999" step="0.0001" style="width:110px">
+          </div>
+        </div>
+        <input type="range" id="vFrac" min="-0.9999" max="0.9999" value="0.6" step="0.0001" />
+
+        <div class="row2">
+          <div class="stack">
+            <label class="label">Event time t (s)</label>
+            <input type="number" id="tVal" value="0.5" step="0.000001">
+          </div>
+          <div class="stack">
+            <label class="label">Event position x (m)</label>
+            <input type="number" id="xVal" value="50" step="0.000001">
+          </div>
+        </div>
+
+        <div class="row"><div class="label">Particle speed u (fraction of c) — optional</div>
+          <div class="flex" style="justify-content:flex-end">
+            <input type="number" id="uFracNum" value="0.3" min="-0.9999" max="0.9999" step="0.0001" style="width:110px">
+          </div>
+        </div>
+        <input type="range" id="uFrac" min="-0.9999" max="0.9999" value="0.3" step="0.0001" />
+
+        <div class="row"><div class="label">Diagram time window T (s)</div>
+          <div class="flex" style="justify-content:flex-end"><input type="number" id="Twindow" value="1" min="0.05" step="0.05" style="width:110px"></div>
+        </div>
+
+        <div class="flex" style="margin-top:10px; flex-wrap:wrap">
+          <button class="btn primary" id="computeBtn">Compute transforms</button>
+          <button class="btn" id="resetBtn" title="Reset to defaults">Reset</button>
+          <button class="btn" id="pngBtn" title="Download diagram as PNG">Download PNG</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="statgrid">
+          <div class="stat"><div class="k">β = v/c</div><div class="v" id="betaOut">0.6000</div></div>
+          <div class="stat"><div class="k">γ = 1/√(1−β²)</div><div class="v" id="gammaOut">1.2500</div></div>
+          <div class="stat"><div class="k">(x′, t′)</div><div class="v" id="xtpOut">—</div></div>
+          <div class="stat"><div class="k">Δτ for Δt (moving clock)</div><div class="v" id="tauOut">—</div></div>
+          <div class="stat"><div class="k">Velocity composition u ⊕ v</div><div class="v" id="uPlusVOut">—</div></div>
+          <div class="stat"><div class="k">u in S′ (boost v)</div><div class="v" id="uPrimeOut">—</div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="notice">Notes: (1) Inputs clamp to |v|,|u| &lt; c. (2) Event transform uses standard 1D Lorentz boost. (3) Minkowski diagram scales to the chosen time window T with x-range ±cT. (4) All computations are client‑side.</div>
+      </section>
+
+      <!-- Visuals -->
+      <section class="card" aria-label="diagram">
+        <h2>Minkowski Diagram (ct vs x)</h2>
+        <div class="sub">Light-cone (±45°), S′ axes under boost v, the worldline of S′ origin (x=v t), and your event E at (x, ct).</div>
+        <div class="hr"></div>
+        <canvas id="mkCanvas" width="900" height="560" aria-label="Minkowski diagram"></canvas>
+        <div class="legend">
+          <span class="sw"><i class="lc"></i> light cone (x = ± ct)</span>
+          <span class="sw"><i class="wl"></i> worldline of S′ origin (x = v t)</span>
+          <span class="sw"><i class="xp"></i> x′ axis (t′=0) • ct = (v/c) x</span>
+          <span class="sw"><i class="xp2"></i> Event E (x, ct)</span>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Built with vanilla HTML/CSS/JS. Equations: <em>x′ = γ(x − v t)</em>, <em>t′ = γ(t − v x / c²)</em>, <em>γ = 1/√(1−v²/c²)</em>,
+      <em>u ⊕ v = (u+v)/(1 + uv/c²)</em>, and <em>u′ = (u − v)/(1 − uv/c²)</em>.
+    </footer>
+  </div>
+
+  <script>
+  (()=>{
+    const $ = (sel)=>document.querySelector(sel);
+    const cInput = $('#cVal');
+    const vFrac = $('#vFrac');
+    const vFracNum = $('#vFracNum');
+    const uFrac = $('#uFrac');
+    const uFracNum = $('#uFracNum');
+    const tVal = $('#tVal');
+    const xVal = $('#xVal');
+    const Twindow = $('#Twindow');
+    const computeBtn = $('#computeBtn');
+    const resetBtn = $('#resetBtn');
+    const pngBtn = $('#pngBtn');
+    const naturalUnits = $('#naturalUnits');
+
+    const betaOut = $('#betaOut');
+    const gammaOut = $('#gammaOut');
+    const xtpOut = $('#xtpOut');
+    const tauOut = $('#tauOut');
+    const uPlusVOut = $('#uPlusVOut');
+    const uPrimeOut = $('#uPrimeOut');
+
+    const canvas = $('#mkCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function clamp(v, min, max){ return Math.min(max, Math.max(min, v)); }
+
+    function gammaFromBeta(beta){
+      if (Math.abs(beta) >= 1) return Infinity;
+      return 1/Math.sqrt(1 - beta*beta);
+    }
+
+    function fmt(n, digits=6){
+      if (!isFinite(n)) return '∞';
+      const abs = Math.abs(n);
+      if (abs >= 1e6 || (abs && abs < 1e-3)) return n.toExponential(2);
+      return Number(n.toFixed(digits)).toString();
+    }
+
+    function state(){
+      let c = Number(cInput.value);
+      if (naturalUnits.checked) c = 1;
+      const beta = clamp(Number(vFrac.value), -0.999999, 0.999999);
+      const uBeta = clamp(Number(uFrac.value), -0.999999, 0.999999);
+      const v = beta * c;
+      const u = uBeta * c;
+      const t = Number(tVal.value);
+      const x = Number(xVal.value);
+      const T = Math.max(0.001, Number(Twindow.value));
+      return {c, beta, v, uBeta, u, t, x, T};
+    }
+
+    function lorentzTransform(t, x, v, c){
+      const beta = v/c;
+      const g = gammaFromBeta(beta);
+      const tP = g*(t - (v*x)/(c*c));
+      const xP = g*(x - v*t);
+      return {tP, xP, g, beta};
+    }
+
+    function velocityAdd(u, v, c){
+      // Compose two speeds measured in same frame: u ⊕ v
+      const num = u + v;
+      const den = 1 + (u*v)/(c*c);
+      return num/den;
+    }
+
+    function velocityTransform(u, v, c){
+      // Speed u in S observed in S' moving at v relative to S
+      const num = u - v;
+      const den = 1 - (u*v)/(c*c);
+      return num/den;
+    }
+
+    function compute(){
+      const {c, beta, v, u, uBeta, t, x, T} = state();
+      const g = gammaFromBeta(beta);
+      betaOut.textContent = fmt(beta, 4);
+      gammaOut.textContent = fmt(g, 6);
+
+      // Event transform
+      const {tP, xP} = lorentzTransform(t, x, v, c);
+      xtpOut.textContent = `x′=${fmt(xP,6)} m, t′=${fmt(tP,6)} s`;
+
+      // Proper time for a moving clock: Δτ = Δt * sqrt(1 - β²)
+      const tau = t*Math.sqrt(Math.max(0,1 - beta*beta));
+      tauOut.textContent = `τ = ${fmt(tau,6)} s for Δt = ${fmt(t,6)} s`;
+
+      // Velocity composition u ⊕ v
+      const up = velocityAdd(u, v, c);
+      uPlusVOut.textContent = `${fmt(up/c,6)} c  (${fmt(up,6)} m/s)`;
+
+      // u in S′
+      const uPrime = velocityTransform(u, v, c);
+      uPrimeOut.textContent = `${fmt(uPrime/c,6)} c  (${fmt(uPrime,6)} m/s)`;
+
+      drawDiagram({c, beta, v, t, x, T});
+    }
+
+    function drawDiagram({c, beta, v, t, x, T}){
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+
+      // Margins
+      const m = 40;
+      const plotW = w - 2*m;
+      const plotH = h - 2*m;
+
+      // Scale: x in meters from -cT..+cT; ct in meters from -cT..+cT (so light cone is ±45°)
+      const Xmax = c*T;
+      const Ymax = c*T;
+
+      function toPxX(X){ return m + (X + Xmax) * (plotW/(2*Xmax)); }
+      function toPxY(CT){ return m + (Ymax - CT) * (plotH/(2*Ymax)); }
+
+      // Background grid
+      ctx.save();
+      ctx.strokeStyle = '#1f2633';
+      ctx.lineWidth = 1;
+      const gridN = 10;
+      for(let i=0;i<=gridN;i++){
+        const gx = m + i*(plotW/gridN);
+        const gy = m + i*(plotH/gridN);
+        ctx.beginPath(); ctx.moveTo(gx, m); ctx.lineTo(gx, m+plotH); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(m, gy); ctx.lineTo(m+plotW, gy); ctx.stroke();
+      }
+      ctx.restore();
+
+      // Axes
+      ctx.save();
+      ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1.5;
+      // x=0
+      ctx.beginPath(); ctx.moveTo(toPxX(0), m); ctx.lineTo(toPxX(0), m+plotH); ctx.stroke();
+      // ct=0
+      ctx.beginPath(); ctx.moveTo(m, toPxY(0)); ctx.lineTo(m+plotW, toPxY(0)); ctx.stroke();
+      ctx.fillStyle = '#9aa7bd'; ctx.font = '12px system-ui';
+      ctx.fillText('x (m)', m+plotW-28, toPxY(0)-6);
+      ctx.fillText('ct (m)', toPxX(0)+6, m+12);
+      ctx.restore();
+
+      // Light cone: ct = ± x
+      ctx.save();
+      ctx.strokeStyle = '#88aaff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(toPxX(-Xmax), toPxY(-Xmax)); ctx.lineTo(toPxX(Xmax), toPxY(Xmax)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(toPxX(-Xmax), toPxY(Xmax)); ctx.lineTo(toPxX(Xmax), toPxY(-Xmax)); ctx.stroke();
+      ctx.restore();
+
+      // Worldline of S' origin: x = v t ⇒ x = (v/c) * (ct)
+      ctx.save();
+      ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 2.5;
+      const slope = v/c; // x / (ct)
+      // draw across ct in [-cT, cT]
+      const N=200; let first=true; ctx.beginPath();
+      for(let i=0;i<=N;i++){
+        const ct = -Ymax + (2*Ymax)*i/N;
+        const xx = slope * ct;
+        if (Math.abs(xx) <= Xmax+1e-9){
+          const px = toPxX(xx), py = toPxY(ct);
+          if (first){ ctx.moveTo(px, py); first=false; } else ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // x' axis (t' = 0) ⇒ t = (v/c^2) x ⇒ ct = (v/c) x
+      ctx.save();
+      ctx.setLineDash([6,6]);
+      ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2;
+      let first2=true; ctx.beginPath();
+      for(let i=0;i<=N;i++){
+        const xx = -Xmax + (2*Xmax)*i/N;
+        const ct = (v/c) * xx;
+        if (Math.abs(ct) <= Ymax+1e-9){
+          const px = toPxX(xx), py = toPxY(ct);
+          if (first2){ ctx.moveTo(px, py); first2=false; } else ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // Event E at (x, ct)
+      const ctEvt = c * t;
+      ctx.save();
+      ctx.fillStyle = '#fbbf24';
+      const ex = toPxX(x), ey = toPxY(ctEvt);
+      // crosshair
+      ctx.beginPath(); ctx.arc(ex, ey, 4, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#fbbf24aa'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(ex, m); ctx.lineTo(ex, m+plotH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(m, ey); ctx.lineTo(m+plotW, ey); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#cbd5e1'; ctx.font='12px system-ui';
+      ctx.fillText(`E(x=${fmt(x,4)} m, ct=${fmt(ctEvt,4)} m)`, ex+8, ey-8);
+      ctx.restore();
+
+      // Region classification: time-like vs space-like
+      const s2 = (c*c)*(t*t) - (x*x);
+      const tag = s2>0 ? 'timelike' : (s2<0 ? 'spacelike' : 'lightlike');
+      ctx.save();
+      ctx.fillStyle = tag==='timelike' ? '#34d399' : tag==='spacelike' ? '#f87171' : '#fbbf24';
+      ctx.globalAlpha = 0.12;
+      // simple overlay rectangle; subtle hint only
+      ctx.fillRect(m, m, plotW, plotH);
+      ctx.restore();
+
+      // Legend tag
+      ctx.save();
+      ctx.fillStyle = '#9aa7bd'; ctx.font = '12px system-ui';
+      ctx.fillText(`interval: ${tag} (s^2 = c^2 t^2 − x^2 = ${fmt(s2,4)} m^2)`, m+8, m+18);
+      ctx.restore();
+    }
+
+    function syncVF(){ vFracNum.value = vFrac.value; compute(); }
+    function syncVFN(){ vFrac.value = vFracNum.value; compute(); }
+    function syncUF(){ uFracNum.value = uFrac.value; compute(); }
+    function syncUFN(){ uFrac.value = uFracNum.value; compute(); }
+
+    function reset(){
+      cInput.value = 299792458; naturalUnits.checked = false;
+      vFrac.value = 0.6; vFracNum.value = 0.6;
+      uFrac.value = 0.3; uFracNum.value = 0.3;
+      tVal.value = 0.5; xVal.value = 50; Twindow.value = 1;
+      compute();
+    }
+
+    function downloadPNG(){
+      const link = document.createElement('a');
+      link.download = 'minkowski-diagram.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Events
+    [cInput, tVal, xVal, Twindow].forEach(el=> el.addEventListener('input', compute));
+    vFrac.addEventListener('input', syncVF);
+    vFracNum.addEventListener('input', syncVFN);
+    uFrac.addEventListener('input', syncUF);
+    uFracNum.addEventListener('input', syncUFN);
+    naturalUnits.addEventListener('change', compute);
+    computeBtn.addEventListener('click', compute);
+    resetBtn.addEventListener('click', reset);
+    pngBtn.addEventListener('click', downloadPNG);
+
+    // Kick things off
+    compute();
+  })();
+  </script>
+</body>
+</html>
