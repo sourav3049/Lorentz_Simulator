@@ -1,10 +1,5 @@
 # Lorentz Simulator
 
-*A single‑file, client‑side visualizer for special relativity: Lorentz boosts, time dilation, velocity composition, and a Minkowski diagram.*
-
-> **Live demo (GitHub Pages):** `https://<your-username>.github.io/lorentz-simulator/`\
-> **Repo:** `https://github.com/<your-username>/lorentz-simulator`
-
 ---
 
 ## Why this simulator? (Purpose)
